@@ -1,0 +1,52 @@
+name: Automated Commits (EDUCATIONAL PURPOSES ONLY)
+
+on:
+  schedule:
+    - cron: '0 0,3,6,9,12,15,18,21 * * *'  # Runs every 3 hours
+  workflow_dispatch: 
+
+jobs:
+  commit-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history to be able to push
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "autocommit@example.com"  # Use a FAKE email
+          git config --global user.name "AutoCommit Bot" # Use a descriptive name
+
+      - name: Generate and Commit Changes
+        run: |
+          # Create a unique file to avoid merge conflicts.  Use timestamp.
+          timestamp=$(date +%Y%m%d%H%M%S)
+          filename="autocommit_$timestamp.txt"
+          echo "This is an automated commit at $timestamp" > "$filename"
+
+          git add "$filename"
+
+          # Array of different commit messages (AVOID DUPLICATES)
+          commit_messages=(
+            "feat: add automated file for testing"
+            "chore: update timestamped file"
+            "docs: document automated process (DO NOT USE)"
+            "fix: minor tweak to automated script"
+            "style: reformat automated file"
+            "refactor: improve automated commit logic"
+            "test: add test for automatic commit"
+            "perf: optimize automated commit performance"
+          )
+          # Select a random commit message (from 0 to 7)
+          random_index=$(( ( RANDOM % 8 ) ))
+          commit_message="${commit_messages[$random_index]}"
+          
+          git commit -m "$commit_message"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}  # Push to the current branch
